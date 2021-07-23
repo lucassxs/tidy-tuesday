@@ -8,3 +8,13 @@ install.packages('extrafont')
 library(tidyverse)
 library(ggtext)
 library(extrafont)
+loadfonts(device = "win", quiet = TRUE) ## to load the font
+
+# Get the Data-----
+
+drought <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-20/drought.csv')
+
+# Queries to inform plot captions-----
+drought %>% 
+  filter(state.abb) %>%
+  select(state_abb,drought_lvl, pop_total) %>%

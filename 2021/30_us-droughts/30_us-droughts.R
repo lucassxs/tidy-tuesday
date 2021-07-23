@@ -16,5 +16,5 @@ drought <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/ti
 
 # Queries to inform plot captions-----
 drought %>% 
-  filter(state.abb) %>%
-  select(state_abb,drought_lvl, pop_total) %>%
+  filter(state.abb == "AK") %>%
+  select(area_total,drought_lvl, pop_total)

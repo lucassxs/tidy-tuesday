@@ -5,6 +5,7 @@ library(ggrepel)
 library(usmap)
 library(RColorBrewer)
 library(extrafont)
+library(Cairo)
 fonttable <- fonttable()
 
 loadfonts(device = "win", quiet = TRUE) ## to load the font
@@ -40,6 +41,8 @@ notable <- olympics %>%
 labels <- rbind(top,notable) %>%
   mutate(label = paste0(name,"by",age,"(",year,")"))
 
+
+# Scatter plot 
 olympics %>%
   ggplot(aes(x = year, y = age)) +
   geom_point(aes(color = sex),size = 4, alpha = 0.3) +
@@ -68,4 +71,5 @@ olympics %>%
                    box.padding = 0.25,
                    segment.alpha = 0,
                    label.size = .25)
-  
+
+ggsave(here::here("2021", "31_olympics", "gender-of-olympics.png"), device = "png", type = "cairo", width = 12, height = 10, dpi = 300)

@@ -73,3 +73,5 @@ olympics %>%
                    label.size = .25)
 
 ggsave(here::here("2021", "31_olympics", "gender-of-olympics.png"), device = "png", type = "cairo", width = 12, height = 10, dpi = 300)
+
+# Brazilian Modalities

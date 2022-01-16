@@ -20,41 +20,69 @@ showtext_auto()
 showtext_opts(dpi = 300)
 
 # Work \o/
-colony %>%
-  filter(!is.na(colony_added),
-         !is.na(colony_lost)) %>%
-  group_by(year) %>%
-  summarise(colonies_added = sum(colony_added),
-            colonies_lost = sum(colony_lost)) %>%
-  mutate(fill_cond = case_when(year == 2015 | year == 2021 ~ 'highlight',
-                               TRUE ~ 'normal')) %>%
-  ggplot() + 
-  geom_col(aes(year, colonies_added, fill = fill_cond), show.legend = FALSE) +
-  scale_y_continuous(labels = label_comma()) +
-  scale_x_continuous(breaks = breaks_pretty(n = 7)) +
-  scale_fill_manual(values = c('#deb841', '#6d6a75')) +
-  labs(title = 'Number of Bee Colonies in the US from 2015 to 2021',
-       subtitle = 'teste',
-       y = 'Colonies Added',
-       x = NULL,
-       caption = 'By Lucas Stefano | Departament Statistics UEM') +
-  theme(axis.text = element_text(family = 'ibm',
-                                 size = 9),
-        axis.title = element_text(family = 'ibm',
-                                  size = 9),
-        plot.title = element_text(family = 'ibm',
-                                  size = 12),
-        plot.subtitle = element_text(family = 'ibm',
-                                     size = 9),
-        plot.caption = ggtext::element_markdown(family = 'ibm',
-                                                size = 6),
-        panel.background = element_rect('#F5F5F5'),
-        plot.background = element_rect('#F5F5F5'),
-        panel.grid = element_blank(),
-        axis.ticks.y = element_blank(),
-        plot.title.position = 'plot',
-        plot.caption.position = 'plot',
-        plot.margin = margin(25, 15, 10, 15))
+colony <- 
+  colony %>% 
+  mutate(
+    dt_u = case_when(
+      months == "January-March" ~ "-02-01",
+      months == "April-June" ~ "-05-01",
+      months == "July-September" ~ "-08-01",
+      TRUE ~"-11-01"),
+    dt_u = as.POSIXct(str_c(year, dt_u)),
+    season = case_when(
+      months == "January-March" ~ "Summer",
+      months == "April-June" ~ "Autumn",
+      months == "July-September" ~ "Winter",
+      TRUE ~"Spring")
+  )
+
+# as from this link:
+# https://stackoverflow.com/questions/43625341/reverse-datetime-posixct-data-axis-in-ggplot
+c_trans <- function(a, b, breaks = b$breaks, format = b$format) {
+  a <- as.trans(a)
+  b <- as.trans(b)
+  
+  name <- paste(a$name, b$name, sep = "-")
+  
+  trans <- function(x) a$transform(b$transform(x))
+  inv <- function(x) b$inverse(a$inverse(x))
+  
+  trans_new(name = name, 
+            transform = trans, 
+            inverse = inv, 
+            breaks = breaks, 
+            format=format)
+}
+rev_date <- c_trans("reverse", "time")
+
+# Need better colors for the seasons
+myColors <- c("Summer" = "#f47db7", "Autumn" = "#e6867d", 
+              "Winter" = "#4689dd", "Spring" = "#56adc5")
+
+# generate plot for hole country
+theState = "United States"
+#theState = "Texas"
+
+bee_colony_loss <- 
+  colony %>% 
+  mutate(dt_u = as.POSIXct(dt_u),
+         colony_lost_pct = colony_lost_pct/100) %>% 
+  filter(state == theState) %>% 
+  filter(!is.na(colony_lost_pct)) %>% 
+  ggplot(aes(x = colony_lost_pct, y = dt_u, color = season)) +
+  geom_point() +
+  geom_segment(aes(x = 0, xend = colony_lost_pct, 
+                   y = dt_u, yend = dt_u)) +
+  scale_x_continuous(position="top", labels = scales::percent_format(accuracy=1)) +
+  scale_y_continuous(trans = rev_date) +
+  scale_color_manual(values=myColors) +
+  theme_bw() +
+  labs(color = "Season:",
+       title = "Percentage of bee colony loss\nEven if the rate is decreasing we are still losing bees",
+       subtitle = theState,
+       caption = 'Bee Colony Iosses, By: Lucas Stefano | Departament Statistics UEM',
+       y = NULL,
+       x = NULL)
 
 # save output
 ggsave(paste0("02bee_colony", format(Sys.time(), "%d%m%Y"), ".png"),

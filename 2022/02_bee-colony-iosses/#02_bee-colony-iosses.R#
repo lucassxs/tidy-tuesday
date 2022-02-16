@@ -1,0 +1,91 @@
+# Week 2
+# Theme: Bee Colonies
+# Date: Jan 16 2022
+# Author: Lucas Stefano
+
+# Load packages
+library(tidyverse)
+library(showtext)
+library(scales)
+
+# Get the data
+tuesdata <- tidytuesdayR::tt_load('2022-01-11')
+colony <- tuesdata$colony
+
+# Get font
+font_add_google('IBM Plex Sans', family = 'ibm')
+
+# Automatically use showtext to render text for future devices
+showtext_auto()
+showtext_opts(dpi = 300)
+
+# Work \o/
+colony <- 
+  colony %>% 
+  mutate(
+    dt_u = case_when(
+      months == "January-March" ~ "-02-01",
+      months == "April-June" ~ "-05-01",
+      months == "July-September" ~ "-08-01",
+      TRUE ~"-11-01"),
+    dt_u = as.POSIXct(str_c(year, dt_u)),
+    season = case_when(
+      months == "January-March" ~ "Summer",
+      months == "April-June" ~ "Autumn",
+      months == "July-September" ~ "Winter",
+      TRUE ~"Spring")
+  )
+
+# as from this link:
+# https://stackoverflow.com/questions/43625341/reverse-datetime-posixct-data-axis-in-ggplot
+c_trans <- function(a, b, breaks = b$breaks, format = b$format) {
+  a <- as.trans(a)
+  b <- as.trans(b)
+  
+  name <- paste(a$name, b$name, sep = "-")
+  
+  trans <- function(x) a$transform(b$transform(x))
+  inv <- function(x) b$inverse(a$inverse(x))
+  
+  trans_new(name = name, 
+            transform = trans, 
+            inverse = inv, 
+            breaks = breaks, 
+            format=format)
+}
+rev_date <- c_trans("reverse", "time")
+
+# Need better colors for the seasons
+myColors <- c("Summer" = "#f47db7", "Autumn" = "#e6867d", 
+              "Winter" = "#4689dd", "Spring" = "#56adc5")
+
+# generate plot for hole country
+theState = "United States"
+#theState = "Texas"
+
+bee_colony_loss <- 
+  colony %>% 
+  mutate(dt_u = as.POSIXct(dt_u),
+         colony_lost_pct = colony_lost_pct/100) %>% 
+  filter(state == theState) %>% 
+  filter(!is.na(colony_lost_pct)) %>% 
+  ggplot(aes(x = colony_lost_pct, y = dt_u, color = season)) +
+  geom_point() +
+  geom_segment(aes(x = 0, xend = colony_lost_pct, 
+                   y = dt_u, yend = dt_u)) +
+  scale_x_continuous(position="top", labels = scales::percent_format(accuracy=1)) +
+  scale_y_continuous(trans = rev_date) +
+  scale_color_manual(values=myColors) +
+  theme_bw() +
+  labs(color = "Season:",
+       title = "Percentage of bee colony loss\nEven if the rate is decreasing we are still losing bees",
+       subtitle = theState,
+       caption = 'Bee Colony Iosses, By: Lucas Stefano | Departament Statistics UEM',
+       y = NULL,
+       x = NULL)
+
+# save output
+ggsave(paste0("02bee_colony", format(Sys.time(), "%d%m%Y"), ".png"),
+       dpi = 320,
+       width = 12,
+       height =  7)

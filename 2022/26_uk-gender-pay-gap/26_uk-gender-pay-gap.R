@@ -10,7 +10,6 @@ library(scales)
 library(ggtext)
 library(tidytuesdayR)
 library(extrafont)
-library(ib)
 #theme_set(theme_light())
 #font_add_google("IBM Plex Sans", "IBM Plex Sans")
 extrafont::loadfonts(device = "win", quiet = TRUE) ## to load the font
@@ -78,7 +77,7 @@ p <- paygap %>%
   scale_y_continuous(labels = percent) +
   facet_wrap(vars(employer_size)) +
   labs(x = "Quartil de Pagamento", y = "Participação Feminina",
-       title = "A participação feminina tende a diminuir, à medida que a remuneração \naumenta, em cada categoria de número de funcionários.",
+       title = "A participação feminina tende a diminuir, à medida que a remuneração \naumenta, em cada categoria por dimensão do emprego.",
        subtitle = "( ) denota # de amostras e Q4 é o quartil superior",
        caption = "Fonte: gender-pay-gap.service.gov.uk")+
 #theme(text=element_text("IBM Plex Sans"))+

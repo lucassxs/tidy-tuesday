@@ -1,6 +1,6 @@
 # Week 26
 # Theme: UK Gender pay gap
-# Date: Jan 16 2022
+# Date: Jun 28 2022
 # Author: Lucas Stefano
 
 # Load packages
